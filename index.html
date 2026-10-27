@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="uz"><head><meta charset="utf-8"><title>RNN — Rekurrent neyron tarmoq</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--c:#22d3ee;--p:#a855f7;--b:#3b82f6;--k:#f472b6;--t:#e6ecff;--m:#93a0c8}
+html,body{margin:0;height:100%;background:#05060f;overflow:hidden;font-family:'Times New Roman',Times,serif;color:var(--t)}
+#deck{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;background:radial-gradient(circle at 20% 10%,#14123a,#05060f 70%)}
+#bg{position:absolute;inset:0}
+.slide{position:absolute;inset:0;padding:28px 56px;box-sizing:border-box;opacity:0;visibility:hidden;transform:translateX(50px) scale(.98);transition:opacity .6s,transform .6s,visibility .6s}
+.slide.on{opacity:1;visibility:visible;transform:none}
+h1{font-size:68px;margin:0 0 10px;background:linear-gradient(90deg,var(--c),var(--p));-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.15}
+h2{font-size:42px;margin:0 0 12px;color:var(--c);border-left:5px solid var(--p);padding-left:14px}
+p,li{font-size:28px;line-height:1.35;margin:5px 0}
+.s{color:var(--m)}
+.f{opacity:0}.on .f{animation:in .7s calc(var(--i,0)*.3s + .3s) both}
+@keyframes in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.g{display:grid;gap:16px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.card{background:rgba(59,60,160,.18);border:1px solid rgba(34,211,238,.35);border-radius:14px;padding:12px 16px;box-shadow:0 0 18px rgba(168,85,247,.15)}
+.card b{color:var(--c)}.card p{font-size:23px;margin:3px 0}
+.m{font-family:'Times New Roman',Times,serif;font-style:italic;font-size:36px;margin:6px 0;color:#fff}
+.m.sm{font-size:31px}
+sub,sup{font-size:.6em}
+.ch svg,svg.w{width:100%;height:auto;display:block}
+svg text{fill:#e6ecff;font:italic 24px 'Times New Roman',serif;text-anchor:middle}
+.nd{stroke-width:2;fill:rgba(168,85,247,.25);stroke:var(--p)}.ni{fill:rgba(34,211,238,.15);stroke:var(--c);stroke-width:2}.no{fill:rgba(244,114,182,.15);stroke:var(--k);stroke-width:2}
+.ln{stroke:var(--c);stroke-width:2;fill:none;marker-end:url(#a)}
+.flow{stroke:var(--c);stroke-width:3;stroke-dasharray:6 6;animation:dash 1s linear infinite;marker-end:url(#a)}
+.flow.r{stroke:var(--k)}
+@keyframes dash{to{stroke-dashoffset:-12}}
+.bar{fill:var(--c);transform-box:fill-box;transform-origin:bottom}
+.on .bar{animation:grow .6s calc(var(--i)*.15s + .4s) both}
+@keyframes grow{from{transform:scaleY(0)}}
+table{border-collapse:collapse;width:100%;font-size:24px}th,td{border:1px solid rgba(34,211,238,.35);padding:8px 10px;text-align:left}th{color:var(--c);background:rgba(59,60,160,.3)}
+a{color:var(--c)}
+.tag{display:inline-block;background:rgba(168,85,247,.25);border:1px solid var(--p);border-radius:20px;padding:4px 14px;margin:4px;font-size:25px}
+#ui{position:fixed;right:14px;bottom:10px;z-index:9;display:flex;gap:8px;align-items:center;color:var(--m);font:14px sans-serif}
+#ui button{background:#1a1a4a;color:#fff;border:1px solid var(--c);border-radius:8px;padding:6px 12px;cursor:pointer}
+#nt{position:fixed;left:0;right:0;bottom:0;background:rgba(5,6,15,.95);border-top:2px solid var(--p);padding:14px 24px;font-size:18px;display:none;z-index:8}
+.plan{display:flex;gap:16px;align-items:center;padding:20px}.plan .n{font:700 52px/1 sans-serif;color:var(--p);text-shadow:0 0 14px var(--c)}
+pre{background:rgba(5,6,15,.85);border:1px solid var(--c);border-radius:12px;padding:12px 16px;font:16px/1.45 Consolas,monospace;color:#9be7ff;margin:0 0 12px;overflow:hidden}
+.pr{display:flex;align-items:center;gap:10px;font-size:26px;margin:5px 0}.pr span{width:84px}.pr i{height:16px;border-radius:8px;background:linear-gradient(90deg,var(--p),var(--c));transform-origin:left}
+.on .pr i{animation:wd .8s calc(var(--i)*.2s + .8s) both}@keyframes wd{from{transform:scaleX(0)}}
+.ap{grid-template-columns:repeat(3,1fr)}.ap .card{padding:10px 16px}.ap .card p{font-size:26px}.ap .card b{font-size:30px}
+.tl{display:flex;position:relative;margin-top:22px;border-top:3px solid var(--c)}.tl div{flex:1;text-align:center;position:relative;padding:14px 6px 0;font-size:20px;line-height:1.25}
+.tl div:before{content:"";position:absolute;left:50%;top:-10px;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:var(--p)}
+.tl b{display:block;color:var(--c);font-size:24px}
+</style></head><body>
+<div id="deck"><canvas id="bg"></canvas>
+
+<section class="slide"><div style="margin-top:70px">
+<h1 class="f" style="--i:1;font-size:66px">Rekurrent neyron tarmoq (RNN):<br>arxitektura, qo‘llanish sohalari va matematik model</h1>
+</div>
+<div class="ch f" style="--i:3;width:760px;margin:30px auto 0" data-n="5" data-x="11111" data-y="11111" data-lab="1,2,3,4,5"></div>
+<svg id="net" class="f" style="--i:4;position:absolute;right:30px;bottom:30px;width:230px" viewBox="0 0 200 200"></svg></section>
+
+<section class="slide"><h2>Taqdimot rejasi</h2>
+<div class="g g2" style="margin-top:14px">
+<div class="card plan f"><span class="n">01</span><div><b>RNN tushunchasi va arxitekturasi</b><p>Ketma-ket ma’lumotlar, yashirin holat, vaqt bo‘yicha yoyilgan sxema (3–5-slaydlar)</p></div></div>
+<div class="card plan f" style="--i:1"><span class="n">02</span><div><b>Matematik model, dastur va o‘qitish</b><p>Formulalar, o‘lchamlar, sodda misol, BPTT va yo‘qotish funksiyasi (6–8)</p></div></div>
+<div class="card plan f" style="--i:2"><span class="n">03</span><div><b>Turlari va qo‘llanish sohalari</b><p>One-to-One … Many-to-Many, amaliy misol, afzallik va kamchiliklar (9–12)</p></div></div>
+<div class="card plan f" style="--i:3"><span class="n">04</span><div><b>Muammolar va zamonaviy o‘rni</b><p>Gradient muammosi, LSTM/GRU, Transformer bilan farqi, xulosa, manbalar va yakun (13–17)</p></div></div></div>
+<div class="ch f" style="--i:5;width:620px;margin:14px auto 0" data-n="4" data-x="1111" data-y="1111" data-lab="1,2,3,4"></div></section>
+<section class="slide"><h2>RNN tushunchasi</h2>
+<div class="g g2"><div class="card f"><b>RNN nima?</b><p>Ketma-ket ma’lumotlarni qadam-baqadam qayta ishlaydigan va ichki xotira vazifasini bajaruvchi <b>yashirin holat</b> (h<sub>t</sub>) ni saqlaydigan neyron tarmoq.</p></div>
+<div class="card f" style="--i:1"><b>Oddiy (to‘g‘ri tarqalish) tarmoqdan farqi</b><p>Oddiy tarmoq har bir kirishni mustaqil qayta ishlaydi. RNN esa joriy kirish x<sub>t</sub> bilan birga oldingi holat h<sub>t−1</sub> dan ham foydalanadi.</p></div></div>
+<p class="f" style="--i:2;margin-top:18px"><b>Nega ketma-ketliklar uchun?</b> Elementlar tartibi ma’noga ega: «Ali Valiga xat yozdi» va «Vali Aliga xat yozdi» jumlalarida so‘zlar deyarli bir xil, lekin xatni kim yozgani o‘zgaradi: so‘zlar tartibi ma’noni belgilaydi. Parametrlar barcha vaqt qadamlarida bir xil (umumiy) bo‘ladi, ketma-ketlik uzunligi o‘zgaruvchan bo‘lishi mumkin.</p>
+<div class="f" style="--i:3;margin-top:14px"><span class="tag">Matn</span><span class="tag">Nutq</span><span class="tag">Vaqt qatorlari</span><span class="tag">Sensor signallari</span><span class="tag">Video kadrlar</span></div>
+<div class="tl f" style="--i:4"><div><b>1982</b><span>Hopfield: rekurrent xotira</span></div><div><b>1986</b><span>Rumelhart va b.: backprop</span></div><div><b>1990</b><span>Elman (RNN), Werbos (BPTT)</span></div><div><b>1997</b><span>Hochreiter, Schmidhuber: LSTM</span></div><div><b>2014</b><span>Cho va b.: GRU</span></div><div><b>2017</b><span>Vaswani va b.: Transformer</span></div></div></section>
+
+<section class="slide"><h2>RNN arxitekturasi</h2>
+<div class="g g2"><div><p class="s f">Bir vaqt qadamidagi tarmoq (qaytuvchi bog‘lanish bilan)</p>
+<svg class="w f" style="--i:1" viewBox="0 0 400 300"><defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0L8,4L0,8z" fill="context-stroke"/></marker></defs>
+<circle class="ni" cx="200" cy="260" r="26"/><text x="200" y="266">x<tspan dy="5" font-size="17">t</tspan></text>
+<circle class="nd" cx="200" cy="150" r="34"/><text x="200" y="156">h<tspan dy="5" font-size="17">t</tspan></text>
+<circle class="no" cx="200" cy="40" r="26"/><text x="200" y="46">y<tspan dy="5" font-size="17">t</tspan></text>
+<line class="ln" x1="200" y1="234" x2="200" y2="186"/><line class="ln" x1="200" y1="116" x2="200" y2="68"/>
+<path class="flow" d="M230,130 C330,80 330,220 230,172"/>
+<text x="150" y="215">W<tspan dy="4" font-size="16">xh</tspan></text><text x="150" y="95">W<tspan dy="4" font-size="16">hy</tspan></text>
+<text x="335" y="155">W<tspan dy="4" font-size="16">hh</tspan></text><text x="335" y="178" font-size="20">(h<tspan dy="4" font-size="14">t−1</tspan><tspan dy="-4">)</tspan></text>
+<text x="85" y="150" fill="#93a0c8">b<tspan dy="4" font-size="16">h</tspan></text><text x="85" y="40">b<tspan dy="4" font-size="16">y</tspan></text></svg></div>
+<div><p class="s f" style="--i:2">Vaqt bo‘yicha yoyilgan ko‘rinish</p>
+<div class="ch f" style="--i:3" data-n="3" data-x="111" data-y="111" data-lab="t−1,t,t+1"></div></div></div>
+<div class="card f" style="--i:4"><p><b>x<sub>t</sub></b> — kirish; <b>h<sub>t−1</sub></b> — oldingi yashirin holat; <b>h<sub>t</sub></b> — yangi yashirin holat; <b>y<sub>t</sub></b> — chiqish; <b>W<sub>xh</sub>, W<sub>hh</sub>, W<sub>hy</sub></b> — vazn matritsalari; <b>b<sub>h</sub>, b<sub>y</sub></b> — siljish vektorlari. Yoyilgan sxemada barcha vaqt qadamlarida <b>bir xil</b> W va b ishlatiladi.</p></div></section>
+
+<section class="slide"><h2>RNN qanday ishlaydi?</h2>
+<div class="ch f" style="width:700px;margin:0 auto" data-n="3" data-x="111" data-y="000" data-lab="1,2,3"></div>
+<ul>
+<li class="f" style="--i:1">Har bir qadamda yangi kirish x<sub>t</sub> olinadi.</li>
+<li class="f" style="--i:2">Oldingi yashirin holat h<sub>t−1</sub> hisobga olinadi.</li>
+<li class="f" style="--i:3">Yangi yashirin holat h<sub>t</sub> hosil bo‘ladi.</li>
+<li class="f" style="--i:4">h<sub>t</sub> oldingi ma’lumotlarning muhim qismini keyingi qadamga uzatadi: <b>x<sub>1</sub> → h<sub>1</sub> → h<sub>2</sub> → h<sub>3</sub></b>.</li></ul></section>
+
+<section class="slide"><h2>RNN matematik modeli</h2>
+<div class="g g2"><div>
+<div class="m f">h<sub>t</sub> = tanh(W<sub>xh</sub> x<sub>t</sub> + W<sub>hh</sub> h<sub>t−1</sub> + b<sub>h</sub>)</div>
+<div class="m f" style="--i:1">z<sub>t</sub> = W<sub>hy</sub> h<sub>t</sub> + b<sub>y</sub></div>
+<div class="m f" style="--i:2">ŷ<sub>t</sub> = softmax(z<sub>t</sub>)</div>
+<p class="f s" style="--i:2;margin-top:0">softmax(z)<sub>c</sub> = e<sup>z<sub>c</sub></sup> / Σ<sub>j</sub> e<sup>z<sub>j</sub></sup> — ko‘p sinfli klassifikatsiya</p>
+<div class="m sm f" style="--i:3">x<sub>t</sub> ∈ ℝ<sup>d</sup>, h<sub>t</sub> ∈ ℝ<sup>m</sup>, z<sub>t</sub>, ŷ<sub>t</sub> ∈ ℝ<sup>k</sup><br>W<sub>xh</sub> ∈ ℝ<sup>m×d</sup>, W<sub>hh</sub> ∈ ℝ<sup>m×m</sup>, W<sub>hy</sub> ∈ ℝ<sup>k×m</sup><br>b<sub>h</sub> ∈ ℝ<sup>m</sup>, b<sub>y</sub> ∈ ℝ<sup>k</sup></div></div>
+<div><div class="card f" style="--i:3"><p><b>tanh</b> — qiymatlarni (−1; 1) oralig‘iga o‘tkazuvchi nochiziqli aktivatsiya.</p><p><b>softmax</b> — logitlarni yig‘indisi 1 ga teng ehtimolliklarga aylantiradi.</p><p><b>z<sub>t</sub></b> — logitlar (normallashtirilmagan baholar); <b>d, m, k</b> — kirish, yashirin holat va chiqish o‘lchamlari.</p></div>
+<div class="card f" style="--i:4;margin-top:12px"><p><b>Regressiya:</b> chiqish qatlamida chiziqli aktivatsiya: ŷ<sub>t</sub> = W<sub>hy</sub> h<sub>t</sub> + b<sub>y</sub> (bitta qiymat uchun k = 1). Klassifikatsiyada esa k — sinflar soni va softmax ishlatiladi.</p><div style="display:flex;gap:12px;align-items:center;margin-top:8px"><svg viewBox="0 0 200 100" style="width:190px;flex:none"><line x1="10" y1="50" x2="190" y2="50" stroke="#93a0c8"/><line x1="100" y1="5" x2="100" y2="95" stroke="#93a0c8"/><polyline class="flow" style="marker-end:none;stroke-dasharray:none;animation:none" fill="none" points="10,89.8 40,88.6 70,80.5 85,68.5 100,50 115,31.5 130,19.5 160,11.4 190,10.2"/><text x="160" y="40" font-size="19">tanh(z)</text></svg><p class="s" style="font-size:22px">tanh′(z) = 1 − tanh²(z) ∈ (0; 1]. Parametrlar soni: m(d + m + 1) + k(m + 1). Bu — model ifodasi; o‘qitish (BPTT) alohida, 8-slayd.</p></div></div></div></div></section>
+
+<section class="slide"><h2>Sodda misol: gapdagi keyingi so‘zni bashorat qilish</h2>
+<div class="g g2"><div><div class="ch f" style="width:430px;margin:0 auto" data-n="3" data-x="111" data-y="001" data-lab="1,2,3"></div>
+<div class="f" style="--i:2;text-align:center"><span class="tag">Bugun</span>→<span class="tag">havo</span>→<span class="tag">juda</span>→<span class="tag" style="border-color:var(--k)">?</span></div></div>
+<div><ul><li class="f" style="--i:1">x<sub>1</sub>, x<sub>2</sub>, x<sub>3</sub> — so‘zlarning vektor ko‘rinishi.</li>
+<li class="f" style="--i:2">h<sub>1</sub> → h<sub>2</sub> → h<sub>3</sub> — har bir so‘z oldingi so‘zlar haqidagi axborotni to‘playdi.</li>
+<li class="f" style="--i:3">ŷ<sub>3</sub> = softmax(W<sub>hy</sub> h<sub>3</sub> + b<sub>y</sub>) — lug‘atdagi so‘zlarning ehtimolliklari.</li></ul>
+<div class="f" style="--i:4"><p class="s" style="margin-bottom:2px">Keyingi so‘z ehtimolligi (shartli qiymatlar):</p>
+<div class="pr" style="--i:1"><span>yaxshi</span><i style="width:55%"></i><b>0,55</b></div>
+<div class="pr" style="--i:2"><span>issiq</span><i style="width:25%"></i><b>0,25</b></div>
+<div class="pr" style="--i:3"><span>sovuq</span><i style="width:15%"></i><b>0,15</b></div>
+<div class="pr" style="--i:4"><span>boshqa</span><i style="width:5%"></i><b>0,05</b></div></div></div></div></section>
+
+<section class="slide"><h2>O‘qitish: BPTT va yo‘qotish funksiyasi</h2>
+<div class="ch f" style="width:680px;margin:0 auto" data-n="3" data-x="111" data-y="111" data-b="1" data-lab="1,2,3"></div>
+<p class="f" style="--i:1"><b>BPTT</b> (Backpropagation Through Time): tarmoq vaqt bo‘yicha yoyiladi, yo‘qotish hisoblanadi va gradientlar vaqt bo‘yicha teskari yo‘nalishda (pushti strelkalar) tarqatiladi. Umumiy vaznlarning gradientlari barcha qadamlardan yig‘iladi.</p>
+<div class="m f" style="--i:2">L = − Σ<sub>t</sub> Σ<sub>c</sub> y<sub>t,c</sub> log ŷ<sub>t,c</sub></div>
+<p class="f" style="--i:3">Cross-entropy: har bir vaqt qadamida chiqish baholanadigan klassifikatsiya uchun (y<sub>t,c</sub> — to‘g‘ri sinfning one-hot kodi). Regressiyada odatda MSE: L = (1/T) Σ<sub>t</sub> ‖y<sub>t</sub> − ŷ<sub>t</sub>‖²; faqat oxirgi chiqish baholansa, yo‘qotish bitta qadamdan olinadi.</p></section>
+
+<section class="slide"><h2>RNN turlari</h2>
+<div class="g g2">
+<div class="card f"><b>One-to-One</b> — 1 kirish → 1 chiqish<div class="ch" style="width:120px;margin:0 auto" data-n="1" data-x="1" data-y="1"></div><p>Misol: rasm sinfini aniqlash (oddiy tarmoq)</p></div>
+<div class="card f" style="--i:1"><b>One-to-Many</b> — 1 kirish → ko‘p chiqish<div class="ch" style="width:300px;margin:0 auto" data-n="3" data-x="100" data-y="111"></div><p>Misol: rasm uchun izoh (caption) yaratish</p></div>
+<div class="card f" style="--i:2"><b>Many-to-One</b> — ko‘p kirish → 1 chiqish<div class="ch" style="width:300px;margin:0 auto" data-n="3" data-x="111" data-y="001"></div><p>Misol: sharh sentimentini aniqlash</p></div>
+<div class="card f" style="--i:3"><b>Many-to-Many</b> — ko‘p kirish → ko‘p chiqish<div class="ch" style="width:300px;margin:0 auto" data-n="3" data-x="111" data-y="111"></div><p>Misol: mashina tarjimasi, nutqni tanib olish</p></div></div></section>
+
+<section class="slide"><h2>Qo‘llanish sohalari</h2>
+<div class="g ap">
+<div class="card f"><b>🎙️ Nutqni tanib olish</b><p>Kirish: audio kadrlar → vazifa: transkripsiya → chiqish: matn</p></div>
+<div class="card f" style="--i:1"><b>💬 Sentiment tahlili</b><p>Kirish: matn so‘zlari → sinflash → ijobiy / salbiy</p></div>
+<div class="card f" style="--i:2"><b>✍️ Til modellari</b><p>Kirish: oldingi so‘zlar → keyingi so‘zni bashorat → matn yaratish</p></div>
+<div class="card f" style="--i:3"><b>📈 Vaqt qatorlari</b><p>Kirish: o‘tgan qiymatlar → bashorat → keyingi qiymat</p></div>
+<div class="card f" style="--i:4"><b>📡 Sensor ma’lumotlari</b><p>Kirish: sensor oqimi → holatni baholash → faoliyat turi</p></div>
+<div class="card f" style="--i:5"><b>🚨 Anomaliyalar</b><p>Kirish: oddiy signal → kutilgan qiymat bashorati → katta xato = anomaliya</p></div>
+<div class="card f" style="--i:6"><b>🎬 Video / signallar</b><p>Kirish: kadrlar ketma-ketligi → tahlil → harakat turi</p></div>
+<div class="card f" style="--i:7"><p class="s">Umumiy g‘oya: ketma-ket kirish → yashirin holat → vazifaga mos chiqish.</p></div></div></section>
+
+<section class="slide"><h2>Amaliy misol: internet trafigini bashorat qilish</h2>
+<div class="g g2"><div><p class="f s" style="margin:0">Oxirgi 5 soatdagi trafik (Mbit/s) va 6-soat bashorati</p>
+<svg class="w" viewBox="0 0 520 250" id="tr"><line x1="30" y1="210" x2="500" y2="210" stroke="#93a0c8"/></svg>
+<table class="f" style="--i:5;font-size:23px;text-align:center"><tr><th>Soat</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr><tr><td>Trafik</td><td>120</td><td>150</td><td>180</td><td>170</td><td>210</td><td style="color:var(--k)">≈ 230</td></tr></table>
+<p class="f s" style="--i:6;font-size:23px">Qiymatlar — <b>shartli o‘quv ma’lumotlari</b>, haqiqiy kuzatuv emas.</p></div>
+<div><ol style="padding-left:26px;font-size:25px">
+<li class="f"><b>Masala:</b> 5 soatlik trafikka qarab 6-soatdagi trafikni bashorat qilish (regressiya, Many-to-One).</li>
+<li class="f" style="--i:1"><b>Tayyorlash:</b> qiymatlar me’yorlanadi; x<sub>t</sub> — t-soatdagi trafik (d = 1).</li>
+<li class="f" style="--i:2"><b>RNN:</b> h<sub>t</sub> = tanh(W<sub>xh</sub>x<sub>t</sub> + W<sub>hh</sub>h<sub>t−1</sub> + b<sub>h</sub>) — har soatda yangi qiymat oldingi holat bilan qo‘shiladi.</li>
+<li class="f" style="--i:3"><b>Chiqish:</b> ŷ<sub>6</sub> = W<sub>hy</sub>h<sub>5</sub> + b<sub>y</sub> — bitta son (k = 1), chiziqli aktivatsiya.</li>
+<li class="f" style="--i:4"><b>O‘qitish:</b> xato MSE = (y<sub>6</sub> − ŷ<sub>6</sub>)²; vaznlar BPTT bilan yangilanadi.</li>
+<li class="f" style="--i:5"><b>Natija:</b> bashorat ≈ 230 Mbit/s haqiqiy qiymat bilan solishtiriladi.</li></ol></div></div></section>
+
+<section class="slide"><h2>Afzalliklar va kamchiliklar</h2>
+<div class="g g2"><div class="card f"><b style="font-size:34px">Afzalliklar</b><ul><li>Ketma-ket ma’lumotlarni qayta ishlash</li><li>Oldingi holat haqidagi axborotni saqlash</li><li>Parametrlarni vaqt qadamlarida qayta ishlatish</li></ul></div>
+<div class="card f" style="--i:1;border-color:var(--k)"><b style="font-size:34px;color:var(--k)">Kamchiliklar</b><ul><li>Vanishing gradient muammosi</li><li>Exploding gradient muammosi</li><li>Uzoq muddatli bog‘liqliklarni o‘rganish qiyin</li><li>Ketma-ket hisoblash tufayli parallellik cheklangan</li></ul></div></div>
+<div class="ch f" style="--i:2;width:520px;margin:10px auto" data-n="4" data-x="1111" data-y="0001" data-lab="1,2,3,4"></div></section>
+
+<section class="slide"><h2>Vanishing va exploding gradient</h2>
+<div class="g g2"><div class="card f"><b>Vanishing: ≈ 0,5<sup>k</sup></b><svg class="w bars" data-v="1,.5,.25,.125,.0625,.031,.016,.008" viewBox="0 0 300 120"></svg><p>Gradient juda kichrayadi — dastlabki qadamlar deyarli o‘qitilmaydi.</p></div>
+<div class="card f" style="--i:1"><b>Exploding: ≈ 1,5<sup>k</sup></b><svg class="w bars" data-v="1,1.5,2.25,3.4,5.1,7.6,11.4,17.1" data-c="#f472b6" viewBox="0 0 300 120"></svg><p>Gradient haddan tashqari kattalashadi — o‘qitish beqaror bo‘ladi.</p></div></div>
+<p class="f" style="--i:2;font-size:26px"><b>Nima uchun yuz beradi?</b> O‘qitishda xato signali vaqt bo‘yicha orqaga, har qadamda bir xil vazn matritsasiga ko‘paytirilib uzatiladi. Ko‘paytma 1 dan kichik bo‘lsa, signal har qadamda so‘nadi (vanishing): tarmoq uzoq o‘tmishdagi kirishlarni o‘rganolmaydi. 1 dan katta bo‘lsa, signal tez o‘sadi (exploding): o‘qitish beqaror bo‘ladi. Masalan, 20 qadamdan keyin 0,5 koeffitsiyent signalni deyarli nolga (≈ 0,000001), 1,5 esa taxminan 3300 marta kattalashtiradi.</p>
+<p class="f" style="--i:3;font-size:26px"><b>Yechimlar:</b> <b>gradient clipping</b> — juda katta gradientni belgilangan chegaragacha kichraytirish; <b>LSTM / GRU</b> — darvozalar yordamida muhim axborotni uzoq saqlash.</p></section>
+
+<section class="slide"><h2>RNN, LSTM va GRU taqqoslanishi</h2>
+<table class="f"><tr><th>Mezon</th><th>RNN</th><th>LSTM</th><th>GRU</th></tr>
+<tr><td>Arxitektura</td><td>Eng sodda</td><td>Murakkab (3 darvoza + xotira katagi)</td><td>O‘rtacha (2 darvoza)</td></tr>
+<tr><td>Xotira mexanizmi</td><td>Faqat h<sub>t</sub></td><td>Katak holati c<sub>t</sub> va h<sub>t</sub></td><td>Yangilash va qayta o‘rnatish darvozalari</td></tr>
+<tr><td>Uzoq bog‘liqliklar</td><td>Qiyin</td><td>Yaxshiroq</td><td>Yaxshiroq</td></tr>
+<tr><td>Hisoblash talabi</td><td>Past</td><td>Yuqori</td><td>O‘rtacha</td></tr>
+<tr><td>Qo‘llanishi</td><td>Qisqa ketma-ketliklar, yengil tizimlar</td><td>Til, nutq, uzun vaqt qatorlari</td><td>LSTM ga o‘xshash, kamroq resurs bilan</td></tr></table>
+<div class="m sm f" style="--i:2;margin:8px 0">LSTM: c<sub>t</sub> = f<sub>t</sub> ⊙ c<sub>t−1</sub> + i<sub>t</sub> ⊙ c̃<sub>t</sub>,  h<sub>t</sub> = o<sub>t</sub> ⊙ tanh(c<sub>t</sub>);  f, i, o = σ(W·[h<sub>t−1</sub>, x<sub>t</sub>] + b)</div><p class="f" style="--i:3;font-size:25px">Darvozalar axborot oqimini boshqaradi va oddiy RNN muammolarini kamaytiradi, lekin <b>barcha holatlarda eng yaxshi natija berishi shart emas</b>.</p></section>
+
+<section class="slide"><h2>Zamonaviy sun’iy intellektda RNNning o‘rni</h2>
+<div class="g g3"><div class="card f"><b>RNN / LSTM / GRU</b><p>Hozir ham vaqt qatorlari, sensorlar va resurs cheklangan (kichik, o‘rnatilgan) tizimlarda foydali bo‘lishi mumkin.</p></div>
+<div class="card f" style="--i:1"><b>Transformer</b><p>Self-attention orqali butun ketma-ketlikni parallel qayta ishlaydi va uzoq bog‘liqliklarni yaxshi modellashtiradi; katta til modellarida keng qo‘llaniladi.</p></div>
+<div class="card f" style="--i:2"><b>Asosiy farq</b><p>RNN — ketma-ket holat yangilash; Transformer — barcha pozitsiyalar orasida diqqat (attention) va parallel hisoblash.</p><p>Bir qatlam uchun (n — uzunlik, d — o‘lcham): ketma-ket amallar RNNda O(n), self-attentionda O(1); hisob RNNda O(n·d²), attentionda O(n²·d) (Vaswani va b., 2017).</p></div></div>
+<p class="f" style="--i:3;margin-top:24px">Har bir vazifa uchun yagona eng yaxshi model mavjud emas: tanlov ma’lumot turi, uzunligi, aniqlik talabi va hisoblash resurslariga bog‘liq.</p>
+<div class="ch f" style="--i:4;width:520px;margin:6px auto" data-n="4" data-x="1111" data-y="1111" data-lab="1,2,3,4"></div></section>
+
+<section class="slide"><h2>Xulosa va foydalanilgan manbalar</h2>
+<div class="g g2"><div><ul style="font-size:26px"><li class="f">RNN ketma-ket ma’lumotlarni qayta ishlash uchun mo‘ljallangan.</li><li class="f" style="--i:1">Yashirin holat oldingi holat va joriy kirishga bog‘liq.</li><li class="f" style="--i:2">Model vaznlar, aktivatsiya funksiyasi va chiqish qatlamidan iborat.</li><li class="f" style="--i:3">RNN ko‘p sohada ishlatiladi, ammo uzoq bog‘liqliklarda cheklovlari bor.</li></ul></div>
+<div class="card f" style="--i:4"><b>Manbalar</b><p>1. I. Goodfellow, Y. Bengio, A. Courville. <i>Deep Learning</i>. MIT Press, 2016 — <a href="https://www.deeplearningbook.org">deeplearningbook.org</a></p>
+<p>2. D. Jurafsky, J. H. Martin. <i>Speech and Language Processing</i> (3-nashr, qoralama) — <a href="https://web.stanford.edu/~jurafsky/slp3/">web.stanford.edu/~jurafsky/slp3</a></p>
+<p>3. PyTorch hujjatlari: <i>torch.nn.RNN</i> — <a href="https://pytorch.org/docs/stable/generated/torch.nn.RNN.html">pytorch.org/docs</a></p>
+<p>4. Keras hujjatlari: <i>SimpleRNN</i> — <a href="https://keras.io/api/layers/recurrent_layers/simple_rnn/">keras.io/api</a></p><p style="font-size:18px">5. J. L. Elman, «Finding structure in time», <i>Cognitive Science</i> 14(2), 1990.<br>6. P. Werbos, «Backpropagation through time», <i>Proc. IEEE</i> 78(10), 1990.<br>7. S. Hochreiter, J. Schmidhuber, «Long short-term memory», <i>Neural Computation</i> 9(8), 1997.<br>8. K. Cho va b., GRU — <a href="https://arxiv.org/abs/1406.1078">arXiv:1406.1078</a>; R. Pascanu va b. — <a href="https://arxiv.org/abs/1211.5063">arXiv:1211.5063</a>; A. Vaswani va b. — <a href="https://arxiv.org/abs/1706.03762">arXiv:1706.03762</a></p></div></div></section>
+<section class="slide" style="text-align:center"><div style="margin-top:90px"><h1 class="f" style="font-size:66px">E’tiboringiz uchun rahmat!</h1><p class="f s" style="--i:1;font-size:34px">Savollaringiz bormi?</p></div>
+<div class="ch f" style="--i:2;width:760px;margin:30px auto 0" data-n="5" data-x="11111" data-y="11111" data-lab="1,2,3,4,5"></div></section>
+</div>
+
+<div id="ui"><button id="pv">◀</button><span id="cn"></span><button id="nx">▶</button></div>
+<script>
+(()=>{const C=[[40,100,160],[30,80,120,170],[70,130]],e=document.getElementById('net');let s='';C.forEach((c,i)=>{if(i)C[i-1].forEach(a=>c.forEach(b=>s+=`<line x1="${30+(i-1)*70}" y1="${a}" x2="${30+i*70}" y2="${b}" stroke="#22d3ee" stroke-opacity=".35"/>`))});C.forEach((c,i)=>c.forEach(y=>s+=`<circle cx="${30+i*70}" cy="${y}" r="9" fill="#a855f7" stroke="#22d3ee" stroke-width="2"/>`));e.innerHTML=s})();
+const sb=(l,i)=>`${l}<tspan dy="5" font-size="17">${i}</tspan>`;
+document.querySelectorAll('.ch').forEach(e=>{const n=+e.dataset.n,X=e.dataset.x,Y=e.dataset.y,L=(e.dataset.lab||'').split(','),B=e.dataset.b;
+let s=`<svg viewBox="0 0 ${n*110+40} 235"><defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0L8,4L0,8z" fill="context-stroke"/></marker></defs>`;
+for(let i=0;i<n;i++){const x=75+i*110,l=L[i]||i+1;
+if(i<n-1)s+=B?`<line class="flow r" x1="${x+82}" y1="120" x2="${x+28}" y2="120"/>`:`<line class="flow" x1="${x+28}" y1="120" x2="${x+82}" y2="120"/>`;
+if(X[i]=='1')s+=`<line class="ln" x1="${x}" y1="178" x2="${x}" y2="150"/><circle class="ni" cx="${x}" cy="200" r="22"/><text x="${x}" y="205">${sb('x',l)}</text>`;
+if(Y[i]=='1')s+=(B?`<line class="flow r" x1="${x}" y1="66" x2="${x}" y2="90"/>`:`<line class="ln" x1="${x}" y1="92" x2="${x}" y2="66"/>`)+`<circle class="no" cx="${x}" cy="42" r="22"/><text x="${x}" y="47">${sb('y',l)}</text>`;
+s+=`<circle class="nd" cx="${x}" cy="120" r="28"/><text x="${x}" y="125">${sb('h',l)}</text>`}
+e.innerHTML=s+'</svg>'});
+document.querySelectorAll('.bars').forEach(e=>{const v=e.dataset.v.split(',').map(Number),m=Math.max(...v);
+e.innerHTML=v.map((a,i)=>{const h=Math.max(3,a/m*100);return `<rect class="bar" style="--i:${i}" fill="${e.dataset.c||'#22d3ee'}" x="${15+i*35}" y="${110-h}" width="24" height="${h}"/>`}).join('')});
+(()=>{const v=[120,150,180,170,210,230],e=document.getElementById('tr');
+e.innerHTML+=v.map((a,i)=>`<rect class="bar" style="--i:${i}" x="${50+i*70}" y="${210-a*.7}" width="40" height="${a*.7}" ${i==5?'fill="none" stroke="#f472b6" stroke-width="2" stroke-dasharray="5"':''}/><text x="${70+i*70}" y="228">${i==5?'ŷ₆':'x'+'₁₂₃₄₅'[i]}</text>`).join('')})();
+const bg=document.getElementById('bg'),ctx=bg.getContext('2d');bg.width=1280;bg.height=720;
+const P=[...Array(45)].map(()=>({x:Math.random()*1280,y:Math.random()*720,vx:Math.random()-.5,vy:Math.random()-.5}));
+(function f(){ctx.clearRect(0,0,1280,720);for(const p of P){p.x=(p.x+p.vx+1280)%1280;p.y=(p.y+p.vy+720)%720}
+for(const a of P)for(const b of P){const d=Math.hypot(a.x-b.x,a.y-b.y);if(d<140){ctx.strokeStyle=`rgba(34,211,238,${.18*(1-d/140)})`;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke()}}
+ctx.fillStyle='rgba(168,85,247,.6)';for(const p of P)ctx.fillRect(p.x,p.y,3,3);requestAnimationFrame(f)})();
+const S=[...document.querySelectorAll('.slide')],D=document.getElementById('deck');let c=0;
+S.forEach(x=>{const d=document.createElement('div');d.style.display='flow-root';while(x.firstChild)d.appendChild(x.firstChild);x.appendChild(d)});
+function af(){S.forEach(x=>{const d=x.firstChild;d.style.zoom=1;d.style.zoom=Math.max(.6,Math.min(1,664/d.offsetHeight))})}
+af();addEventListener('load',af);document.fonts&&document.fonts.ready.then(af);
+function go(n){c=Math.max(0,Math.min(S.length-1,n));S.forEach((s,i)=>s.classList.toggle('on',i==c));document.getElementById('cn').textContent=(c+1)+' / '+S.length}
+function fit(){const k=Math.min(innerWidth/1280,innerHeight/720);D.style.transform=`translate(${(innerWidth-1280*k)/2}px,${(innerHeight-720*k)/2}px) scale(${k})`}
+addEventListener('resize',fit);fit();go(0);
+addEventListener('keydown',e=>{if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key))go(c+1);if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key))go(c-1);if(e.key=='Home')go(0);if(e.key=='End')go(S.length-1)});
+pv.onclick=()=>go(c-1);nx.onclick=()=>go(c+1);
+let tx=0;addEventListener('touchstart',e=>tx=e.touches[0].clientX);addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>50)go(c+(d<0?1:-1))});
+</script></body></html>
